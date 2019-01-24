@@ -3,4 +3,5 @@ matrix:
     - language: java
       before_script:
         - cd hw1
-      jdk: openjdk11
+      jdk: 
+        - openjdk11
