@@ -55,7 +55,9 @@ public final class Hashtable {
      */
     public boolean contains(@NotNull String key) {
         for (var entry : bucket(key)) {
-            if (entry.key.equals(key)) return true;
+            if (entry.key.equals(key)) {
+                return true;
+            }
         }
         return false;
     }
@@ -70,7 +72,9 @@ public final class Hashtable {
      */
     public @Nullable String get(@NotNull String key) {
         for (var entry : bucket(key)) {
-            if (entry.key.equals(key)) return entry.value;
+            if (entry.key.equals(key)) {
+                return entry.value;
+            }
         }
         return null;
     }
