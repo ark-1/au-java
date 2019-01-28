@@ -151,10 +151,10 @@ public final class Hashtable {
     }
 
     private static final class Entry {
-        public @NotNull String key;
-        public @NotNull String value;
+        private @NotNull String key;
+        private @NotNull String value;
 
-        public Entry(@NotNull String key, @NotNull String value) {
+        private Entry(@NotNull String key, @NotNull String value) {
             this.key = key;
             this.value = value;
         }
