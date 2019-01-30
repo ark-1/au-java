@@ -3,7 +3,9 @@ package me.arkadybazhanov.au.java.hw2
 class Maybe<out T> private constructor() {
     private var _value: T? = null
 
-    val value get() = _value ?: throw NoSuchElementException("No value in this Maybe")
+    @Suppress("UNCHECKED_CAST")
+    val value
+        get() = if (isPresent) _value as T else throw NoSuchElementException("No value in this Maybe")
 
     var isPresent = false
         private set
@@ -18,5 +20,5 @@ class Maybe<out T> private constructor() {
         fun nothing() = Maybe<Nothing>()
     }
 
-    fun <U> map(mapper: (T) -> U) = if (isPresent) just(mapper(_value!!)) else nothing()
+    fun <U> map(mapper: (T) -> U) = if (isPresent) just(mapper(value)) else nothing()
 }
