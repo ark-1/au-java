@@ -1,0 +1,6 @@
+matrix:
+  include:
+    - language: java
+      before_script:
+        - cd cw2
+      jdk: openjdk11
