@@ -54,7 +54,7 @@ class Trie : Serializable {
     }
 
     private class Node {
-        fun serialize(): String = StringBuilder().also { sb ->
+        fun serialize(): String = StringBuilder().also { output ->
             val stack = mutableListOf(
                     iterator<Entry<Char?, Node>> {
                         yield(object : Entry<Char?, Node> {
@@ -65,19 +65,19 @@ class Trie : Serializable {
             )
 
             while (stack.isNotEmpty()) {
-                val lastIter = stack.last()
-                if (!lastIter.hasNext()) {
+                val lastIterator = stack.last()
+                if (!lastIterator.hasNext()) {
                     stack.removeAt(stack.lastIndex)
                     continue
                 }
 
-                val (c, node) = lastIter.next()
+                val (c, node) = lastIterator.next()
                 if (c == ' ') {
-                    sb.append("space ")
+                    output.append("space ")
                 } else if (c != null) {
-                    sb.append("$c ")
+                    output.append("$c ")
                 }
-                sb.append("${node.size} ${node.isTerminal} ${node.children.size} ")
+                output.append("${node.size} ${node.isTerminal} ${node.children.size} ")
                 stack += (node.children as Map<Char, Node>).iterator()
             }
         }.toString()
@@ -85,24 +85,24 @@ class Trie : Serializable {
         fun deserialize(serialized: String) {
             children.clear()
 
-            val t = StringTokenizer(serialized, " ")
+            val tokenizer = StringTokenizer(serialized, " ")
 
-            size = t.nextToken().toInt()
-            isTerminal = t.nextToken()!!.toBoolean()
+            size = tokenizer.nextToken().toInt()
+            isTerminal = tokenizer.nextToken()!!.toBoolean()
 
-            val stack = mutableListOf(this to t.nextToken().toInt())
+            val stack = mutableListOf(this to tokenizer.nextToken().toInt())
 
             while (stack.isNotEmpty()) {
                 val (node, left) = stack.last()
                 stack.removeAt(stack.lastIndex)
                 if (left == 0) continue
                 stack += node to left - 1
-                val token = t.nextToken()
+                val token = tokenizer.nextToken()
 
                 node.children[if (token == "space") ' ' else token[0]] = Node().also { child ->
-                    child.size = t.nextToken().toInt()
-                    child.isTerminal = t.nextToken()!!.toBoolean()
-                    stack += child to t.nextToken().toInt()
+                    child.size = tokenizer.nextToken().toInt()
+                    child.isTerminal = tokenizer.nextToken()!!.toBoolean()
+                    stack += child to tokenizer.nextToken().toInt()
                 }
             }
         }
