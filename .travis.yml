@@ -9,3 +9,8 @@ matrix:
       before_script:
         - cd cw2
       jdk: openjdk11
+  include:
+    - language: java
+      before_script:
+        - cd hw4
+      jdk: openjdk11
