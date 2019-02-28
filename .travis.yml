@@ -4,7 +4,12 @@ matrix:
       before_script:
         - cd hw1
       jdk: openjdk11
-  include:
+      
+    - language: java
+      before_script:
+        - cd hw2
+      jdk: openjdk11
+      
     - language: java
       before_script:
         - cd cw2
