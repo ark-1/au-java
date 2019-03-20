@@ -19,3 +19,8 @@ matrix:
       before_script:
         - cd hw3
       jdk: openjdk11
+
+    - language: java
+      before_script:
+        - cd hw7
+      jdk: openjdk11
