@@ -1,13 +1,11 @@
 package me.arkadybazhanov.au.java.hw1;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class LazyFactory {
-    public static <T> Lazy<T> createLazy1(Supplier<? extends T> supplier) {
+    public static <T> Lazy<T> createLazySingleThreaded(Supplier<? extends T> supplier) {
         return new Lazy<>() {
             private T value = null;
             private boolean calculated = false;
@@ -23,7 +21,7 @@ public class LazyFactory {
         };
     }
 
-    public static <T> Lazy<T> createLazy2(Supplier<? extends T> supplier) {
+    public static <T> Lazy<T> createLazySynchronized(Supplier<? extends T> supplier) {
         return new Lazy<T>() {
             private T value = null; // TODO
             private volatile boolean calculated = false;
@@ -43,22 +41,21 @@ public class LazyFactory {
         };
     }
 
-//    private static class Box<T> {
-//        public T value;
-//
-//        public Box(T value) {
-//            this.value = value;
-//        }
-//    }
+    private static class Box<T> {
+        public T value;
+
+        public Box(T value) {
+            this.value = value;
+        }
+    }
 
     public static <T> Lazy<T> createLazyLockFree(Supplier<? extends T> supplier) {
         return new Lazy<>() {
-            private volatile AtomicReference<Optional<T>> value = new AtomicReference<>(null);
+            private volatile AtomicReference<Box<T>> value = new AtomicReference<>(null);
 
             @Override
             public T get() {
-                //noinspection OptionalGetWithoutIsPresent
-                return value.updateAndGet(x -> Objects.requireNonNullElseGet(x, () -> Optional.of(supplier.get()))).get();
+                return value.updateAndGet(x -> Objects.requireNonNullElseGet(x, () -> new Box<>(supplier.get()))).value;
             }
         };
     }
