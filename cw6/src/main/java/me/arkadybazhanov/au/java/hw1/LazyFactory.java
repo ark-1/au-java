@@ -7,46 +7,35 @@ import java.util.function.Supplier;
 public class LazyFactory {
     public static <T> Lazy<T> createLazySingleThreaded(Supplier<? extends T> supplier) {
         return new Lazy<>() {
-            private T value = null;
-            private boolean calculated = false;
+
+            private Box<T> value = null;
 
             @Override
             public T get() {
-                if (!calculated) {
-                    value = supplier.get();
-                    calculated = true;
+                if (value == null) {
+                    value = new Box<>(supplier.get());
                 }
-                return value;
+                return value.value;
             }
         };
     }
 
     public static <T> Lazy<T> createLazySynchronized(Supplier<? extends T> supplier) {
-        return new Lazy<T>() {
-            private T value = null; // TODO
-            private volatile boolean calculated = false;
+        return new Lazy<>() {
+            private Box<T> value = null;
 
             @Override
             public T get() {
-                if (!calculated) {
+                if (value == null) {
                     synchronized (this) {
-                        if (!calculated) {
-                            value = supplier.get();
-                            calculated = true;
+                        if (value == null) {
+                            value = new Box<>(supplier.get());
                         }
                     }
                 }
-                return value;
+                return value.value;
             }
         };
-    }
-
-    private static class Box<T> {
-        public T value;
-
-        public Box(T value) {
-            this.value = value;
-        }
     }
 
     public static <T> Lazy<T> createLazyLockFree(Supplier<? extends T> supplier) {
@@ -58,6 +47,14 @@ public class LazyFactory {
                 return value.updateAndGet(x -> Objects.requireNonNullElseGet(x, () -> new Box<>(supplier.get()))).value;
             }
         };
+    }
+
+    private final static class Box<T> {
+        public T value;
+
+        public Box(T value) {
+            this.value = value;
+        }
     }
 
 }
