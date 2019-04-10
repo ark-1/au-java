@@ -1,6 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath("com.github.erizo.gradle:jcstress-gradle-plugin:0.8.1")
+    }
+}
+
 plugins {
     java
 }
+
+apply(plugin = "jcstress")
 
 group = "me.arkadybazhanov.au"
 version = "1.0-SNAPSHOT"
