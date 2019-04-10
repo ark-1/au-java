@@ -22,7 +22,7 @@ public class LazyFactory {
 
     public static <T> Lazy<T> createLazySynchronized(Supplier<? extends T> supplier) {
         return new Lazy<>() {
-            private Box<T> value = null;
+            private volatile Box<T> value = null;
 
             @Override
             public T get() {
