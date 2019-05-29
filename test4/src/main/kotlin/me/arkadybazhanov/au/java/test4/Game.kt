@@ -34,9 +34,10 @@ class Game(n: Int) {
                     return
                 }
 
+                cell.show = true
+
                 if (cell.value == firstCell!!.value) {
                     state = CHOOSING_FIRST
-                    firstCell?.show = false
                     firstCell = null
                     return
                 }
