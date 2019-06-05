@@ -2,6 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.3.31"
+    id("org.openjfx.javafxplugin") version "0.0.7"
+    application
+}
+
+application {
+    mainClassName = "me.arkadybazhanov.au.java.test4.GameAppKt"
 }
 
 group = "me.arkadybazhanov.au"
@@ -15,6 +21,10 @@ val junitVersion = "5.3.2"
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+javafx {
+    modules("javafx.controls", "javafx.fxml")
 }
 
 dependencies {
