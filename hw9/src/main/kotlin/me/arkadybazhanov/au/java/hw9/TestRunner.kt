@@ -1,12 +1,13 @@
 package me.arkadybazhanov.au.java.hw9
 
 import me.arkadybazhanov.au.java.hw9.TestResult.*
+import me.arkadybazhanov.au.java.hw9.TestResult.Timed.*
 import java.io.*
-import java.lang.RuntimeException
 import java.lang.reflect.*
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.util.jar.*
+import kotlin.math.roundToLong
 
 /**
  * Describes test result.
@@ -16,17 +17,31 @@ sealed class TestResult {
     abstract val testName: String
 
     /**
-     * Describes passed test
-     * @param testName name of test function
+     * Describes test result, for which time is applicable.
+     * [timeNano]: time that test ran
      */
-    data class Success(override val testName: String) : TestResult()
+    sealed class Timed : TestResult() {
+        abstract val timeNano: Long
 
-    /**
-     * Describes failed test
-     * @param testName name of test function
-     * @param error error which caused test failure
-     */
-    data class Failure(override val testName: String, val error: Throwable) : TestResult()
+        /**
+         * Describes passed test
+         * @param testName name of test function
+         * @param timeNano time that test ran
+         */
+        data class Success(override val testName: String, override val timeNano: Long) : Timed()
+
+        /**
+         * Describes failed test
+         * @param testName name of test function
+         * @param error error which caused test failure
+         * @param timeNano time that test ran
+         */
+        data class Failure(
+            override val testName: String,
+            val error: Throwable,
+            override val timeNano: Long
+        ) : Timed()
+    }
 
     /**
      * Describes failed test
@@ -91,18 +106,21 @@ fun runTests(testClass: Class<*>): List<TestResult> {
         }
 
         before.invokeAll<Before>(testClassInstance)
-        try {
+        val start = System.nanoTime()
+
+        results += try {
             test(testClassInstance)
+            val end = System.nanoTime() - start
+            Success(test.name, end)
         } catch (e: InvocationTargetException) {
+            val end = System.nanoTime() - start
             if (!annotation.expected.java.isAssignableFrom(e.targetException.javaClass)) {
-                results += Failure(test.name, e.targetException)
+                results += Failure(test.name, e.targetException, end)
                 continue
-            }
+            } else Success(test.name, end)
         } finally {
             after.invokeAll<After>(testClassInstance)
         }
-        results += Success(test.name)
-
     }
 
     afterClass.invokeAll<AfterClass>(testClassInstance)
@@ -136,6 +154,8 @@ fun loadTestClasses(file: File): List<Class<*>> {
     }
 }
 
+private val Timed.millis get() = (timeNano / 1_000.0).roundToLong() / 1_000.0
+
 fun main(vararg args: String) {
     require(args.size == 1) { "Accepts single argument (path). args: ${args.contentToString()}" }
     val file = File(args.single())
@@ -149,6 +169,11 @@ fun main(vararg args: String) {
     println()
     println("Tests:")
     results.forEach {
-        println(it.testName + ": " + it::class.simpleName)
+        var message = "${it.testName}: ${it::class.simpleName}"
+        if (it is Timed) {
+            message += " in ${it.millis}ms"
+        }
+
+        println(message)
     }
 }

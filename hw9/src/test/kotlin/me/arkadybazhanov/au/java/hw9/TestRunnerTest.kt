@@ -1,7 +1,7 @@
 package me.arkadybazhanov.au.java.hw9
 
 import me.arkadybazhanov.au.java.hw9.TestResult.*
-import org.junit.jupiter.api.*
+import me.arkadybazhanov.au.java.hw9.TestResult.Timed.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -37,20 +37,25 @@ class TestRunnerTest {
         }
 
         @me.arkadybazhanov.au.java.hw9.Test
-        fun success() {}
+        fun success() {
+            Thread.sleep(100)
+        }
 
         @me.arkadybazhanov.au.java.hw9.Test
         fun failure() {
+            Thread.sleep(50)
             error("failure")
         }
 
         @me.arkadybazhanov.au.java.hw9.Test(RuntimeException::class)
         fun expected() {
+            Thread.sleep(70)
             error("failure")
         }
 
         @me.arkadybazhanov.au.java.hw9.Test(RuntimeException::class)
         fun unexpected() {
+            Thread.sleep(80)
             throw Throwable("surprise")
         }
 
@@ -62,21 +67,28 @@ class TestRunnerTest {
     fun testCorrect() {
         val testResults = runTests(CorrectTests::class.java)
 
+        println(testResults)
         assertEquals(5, testResults.size)
         assertEquals(4, beforeCount)
         assertEquals(4, afterCount)
         assertTrue(beforeClass)
         assertTrue(afterClass)
 
-        assertTrue(testResults.any { it == Success(CorrectTests::success.name) })
+        assertTrue(testResults.any {
+            it is Success && it.testName == CorrectTests::success.name && it.timeNano >= 100 * 1_000_000
+        })
         assertTrue(testResults.any {
             it is Failure && it.testName == CorrectTests::failure.name &&
-                it.error::class == IllegalStateException::class && it.error.message == "failure"
+                it.error::class == IllegalStateException::class && it.error.message == "failure" &&
+                it.timeNano >= 50 * 1_000_000
         })
-        assertTrue(testResults.any { it == Success(CorrectTests::expected.name) })
+        assertTrue(testResults.any {
+            it is Success && it.testName == CorrectTests::expected.name && it.timeNano >= 70 * 1_000_000
+        })
         assertTrue(testResults.any {
             it is Failure && it.testName == CorrectTests::unexpected.name &&
-                it.error::class == Throwable::class && it.error.message == "surprise"
+                it.error::class == Throwable::class && it.error.message == "surprise" &&
+                it.timeNano >= 80 * 1_000_000
         })
         assertTrue(testResults.any { it == Ignored(CorrectTests::ignored.name, "because") })
     }
@@ -134,8 +146,8 @@ class TestRunnerTest {
 
     @Test
     fun testException() {
-        assertThrows(IllegalArgumentException::class.java) {
-            runTests(IncorrectTests5::class.java)
+        assertThrows(IllegalStateException::class.java) {
+            runTests(ExceptionTest::class.java)
         }
     }
 }
