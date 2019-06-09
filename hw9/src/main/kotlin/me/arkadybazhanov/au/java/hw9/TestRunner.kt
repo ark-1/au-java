@@ -2,11 +2,11 @@ package me.arkadybazhanov.au.java.hw9
 
 import me.arkadybazhanov.au.java.hw9.TestResult.*
 import me.arkadybazhanov.au.java.hw9.TestResult.Timed.*
-import java.io.*
+import java.io.File
 import java.lang.reflect.*
 import java.net.URLClassLoader
 import java.nio.file.Files
-import java.util.jar.*
+import java.util.jar.JarFile
 import kotlin.math.roundToLong
 
 /**
@@ -162,16 +162,16 @@ fun main(vararg args: String) {
     require(file.isFile && file.extension in setOf("class", "jar")) {
         "File should be a normal file (.class or .jar). File: ${file.path}"
     }
-    val results = loadTestClasses(file).flatMap { runTests(it) }
+    val results = loadTestClasses(file).flatMap(::runTests)
     println("Passed: " + results.count { it is Success })
     println("Ignored: " + results.count { it is Ignored })
     println("Failed: " + results.count { it is Failure })
     println()
     println("Tests:")
     results.forEach {
-        var message = "${it.testName}: ${it::class.simpleName}"
-        if (it is Timed) {
-            message += " in ${it.millis}ms"
+        val message = "${it.testName}: ${it::class.simpleName}" + when (it) {
+            is Timed -> " in ${it.millis}ms"
+            is Ignored -> ", reason: ${it.why}"
         }
 
         println(message)
